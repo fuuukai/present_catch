@@ -25,24 +25,45 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Run
     SurfaceHolder surfaceHolder;
     Thread thread;
 
-    Present present;
-    Bitmap presentImage;
+    Present present[];
+    Bitmap presentImage[];
+
+    present [] = new Present[2];
+    presentImage [] = new Bitmap [2];
+
 
     int screenWidth, screenHeight;
 
     Player player;
     Bitmap playerImage;
+    Bitmap backgroundImage;
 
     int score = 0;
     int life = 10;
+
+//    String img_name [] = {"img_present0", "img_present1"};
+//    for(int n = 0; n<2; n++){
+//        String imge_name[n] = "" + n;
+//        //String img_name[i] = "img_present" + String.valueOf(i);
+//    }
 
     public GameView(Context context){
         super(context);
         getHolder().addCallback(this);
 
         Resources resources = context.getResources();
-        presentImage = BitmapFactory.decodeResource(resources, R.drawable.img_present0);
+
+        presentImage[0] = BitmapFactory.decodeResource(resources, R.drawable.img_present0);
+        presentImage[1] = BitmapFactory.decodeResource(resources, R.drawable.img_present1);
+
+//        for(int i = 0; i<2; i++) {
+//            presentImage[i] = BitmapFactory.decodeResource(resources, R.drawable.);
+//// 画像の名前から取得できないものか
+////            presentImage[i] = BitmapFactory.decodeResource(resources, R.drawable.("img_present"+i));
+//        }
+
         playerImage = BitmapFactory.decodeResource(resources, R.drawable.img_player);
+        backgroundImage = BitmapFactory.decodeResource(resources, R.drawable.img_background);
     }
 
     @Override
@@ -76,8 +97,8 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Run
     }
 
     class Present{
-        private static final int WIDTH = 100;
-        private static final int HEIGHT = 100;
+        private static final int WIDTH = 20;
+        private static final int HEIGHT = 20;
 
         float x, y;
 
@@ -99,8 +120,8 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Run
     }
 
     class Player{
-        final int WIDTH = 200;
-        final int HEIGHT = 200;
+        final int WIDTH = 50;
+        final int HEIGHT = 50;
 
         float x, y;
 
@@ -130,37 +151,46 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Run
 
         player = new Player();
 
-        present = new Present();
+        for(int i =0; i<2; i++){
+            present[i] = new Present();
+        }
 
         Paint textPaint = new Paint();
         textPaint.setColor(Color.BLACK);
         textPaint.setFakeBoldText(true);
         textPaint.setTextSize(100);
+        backgroundImage = Bitmap.createScaledBitmap(backgroundImage, screenWidth, screenHeight, true);
 
         while(thread != null) {
             Canvas canvas = surfaceHolder.lockCanvas();
-            canvas.drawColor(Color.WHITE);
+
+
+            canvas.drawBitmap(backgroundImage, 0, 0, null);
 
             canvas.drawBitmap(playerImage, player.x, player.y, null);
-            canvas.drawBitmap(presentImage, present.x, present.y, null);
 
             canvas.drawText("Score: " + score, 50, 150, textPaint);
             canvas.drawText("LIFE: " + life, 50, 300, textPaint);
 
-            if (player.isEnter(present)) {
-                present.reset();
-                score += 10;
-            }else if (present.y > screenHeight){
-                present.reset();
-                life--;
-            }else {
-                present.update();
-            }
+            for(int i =0; i<2; i++) {
 
-            if(life <= 0){
-                canvas.drawText("Game Over", screenWidth/3, screenHeight/2, textPaint);
-                surfaceHolder.unlockCanvasAndPost(canvas);
-                break;
+                canvas.drawBitmap(presentImage[i], present[i].x, present[i].y, null);
+
+                if (player.isEnter(present[i])){
+                    present[i].reset();
+                    score += 10;
+                }else if (present[i].y > screenHeight) {
+                    present[i].reset();
+                    life--;
+                } else {
+                    present[i].update();
+                }
+
+                if(life <= 0){
+                    canvas.drawText("Game Over", screenWidth / 3, screenHeight / 2, textPaint);
+                    surfaceHolder.unlockCanvasAndPost(canvas);
+                    break;
+                }
             }
 
             surfaceHolder.unlockCanvasAndPost(canvas);
